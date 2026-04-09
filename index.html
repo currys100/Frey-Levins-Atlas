@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Frey-Levins Family History Map</title>
+
+  <!-- Leaflet CSS & JS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: Georgia, 'Times New Roman', serif;
+      background: #f5f0e8;
+    }
+
+    /* ─── MAP HEADER ─── */
+    #map-header {
+      text-align: center;
+      padding: 24px 16px 12px;
+      background: #f5f0e8;
+    }
+    #map-header h1 {
+      font-size: 2rem;
+      color: #3a2a1a;
+      letter-spacing: 0.04em;
+      font-weight: normal;
+    }
+    #map-header p {
+      font-size: 0.95rem;
+      color: #7a5c3a;
+      margin-top: 4px;
+      font-style: italic;
+    }
+
+    /* ─── MAP CONTAINER ─── */
+    #map {
+      width: 100%;
+      height: 80vh;
+      min-height: 500px;
+      border: 3px solid #b8956a;
+      outline: 6px solid #f5f0e8;
+    }
+
+    /* ─── FOOTER ─── */
+    #map-footer {
+      text-align: center;
+      padding: 10px;
+      font-size: 0.75rem;
+      color: #9a7a5a;
+      font-style: italic;
+    }
+
+    /* ─── CUSTOM MARKER STYLES ─── */
+    .custom-marker {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      cursor: pointer;
+    }
+    .marker-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 50% 50% 50% 0;
+      transform: rotate(-45deg);
+      border: 2px solid rgba(255,255,255,0.8);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 2px 2px 6px rgba(0,0,0,0.3);
+    }
+    .marker-icon span {
+      transform: rotate(45deg);
+      font-size: 15px;
+      line-height: 1;
+    }
+    .marker-label {
+      background: rgba(255,255,255,0.88);
+      color: #3a2a1a;
+      font-size: 10px;
+      font-family: Georgia, serif;
+      font-style: italic;
+      padding: 2px 6px;
+      border-radius: 10px;
+      margin-top: 4px;
+      white-space: nowrap;
+      border: 0.5px solid rgba(0,0,0,0.15);
+      max-width: 120px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    /* ─── POPUP STYLES ─── */
+    .leaflet-popup-content-wrapper {
+      background: #fffdf7;
+      border: 1px solid #c8a878;
+      border-radius: 8px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+      font-family: Georgia, serif;
+      max-width: 240px;
+    }
+    .leaflet-popup-tip {
+      background: #fffdf7;
+    }
+    .popup-inner { padding: 4px 2px; }
+    .popup-inner .event-type {
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: #9a6a3a;
+      margin-bottom: 4px;
+    }
+    .popup-inner h3 {
+      font-size: 1rem;
+      color: #3a2a1a;
+      font-weight: normal;
+      margin-bottom: 4px;
+    }
+    .popup-inner .year {
+      font-size: 0.85rem;
+      color: #7a5c3a;
+      font-style: italic;
+      margin-bottom: 6px;
+    }
+    .popup-inner p {
+      font-size: 0.82rem;
+      color: #5a4030;
+      line-height: 1.5;
+      margin-bottom: 8px;
+    }
+    .popup-inner .popup-photo {
+      width: 100%;
+      border-radius: 4px;
+      border: 1px solid #d8b888;
+      margin-bottom: 6px;
+      display: block;
+    }
+    .popup-inner .photo-placeholder {
+      width: 100%;
+      height: 100px;
+      background: #f0e8d8;
+      border: 1px dashed #c8a878;
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      color: #9a7a5a;
+      font-style: italic;
+      margin-bottom: 6px;
+    }
+
+    /* ─── LEGEND ─── */
+    .map-legend {
+      background: rgba(255, 253, 247, 0.92);
+      border: 1px solid #c8a878;
+      border-radius: 6px;
+      padding: 10px 14px;
+      font-family: Georgia, serif;
+      font-size: 12px;
+      color: #3a2a1a;
+      line-height: 1.8;
+      min-width: 140px;
+    }
+    .map-legend h4 {
+      font-size: 12px;
+      font-weight: normal;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: #7a5c3a;
+      margin-bottom: 6px;
+      border-bottom: 0.5px solid #c8a878;
+      padding-bottom: 4px;
+    }
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin: 3px 0;
+    }
+    .legend-dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      flex-shrink: 0;
+      border: 1.5px solid rgba(255,255,255,0.8);
+    }
+  </style>
+</head>
+<body>
+
+<div id="map-header">
+  <h1>The Frey-Levins Atlas</h1>
+  <!-- ✏️  EDIT: Change the family name and subtitle above -->
+  <p>One Hundred Years Of Home &mdash; 1929&ndash;2026</p>
+</div>
+
+<div id="map"></div>
+
+<div id="map-footer">
+  Map tiles by Stamen Design &amp; Stadia Maps &bull; © OpenStreetMap contributors
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════════════════
+//  CONFIGURATION: Edit these values to customize your map
+// ═══════════════════════════════════════════════════════════════
+
+const MAP_TITLE   = "The Frey-Levins Atlas";    // Also update the <h1> above
+const MAP_SUBTITLE = "One Hundred Years Of Home";
+
+// Starting view: [latitude, longitude] and zoom level
+// Lower zoom = zoomed out (whole country). Higher = zoomed in (city).
+const START_CENTER = [40.65835519511919, -90.13488391914913];  // Center of the US
+const START_ZOOM   = 6;
+
+// ─── EVENT TYPE COLORS ───────────────────────────────────────
+// Each event type gets a color. You can add or rename types here.
+const EVENT_COLORS = {
+  "engagement":  "#c0392b",   // deep red
+  "wedding":     "#8e44ad",   // purple
+  "honeymoon":   "#2980b9",   // blue
+  "birthplace":  "#27ae60",   // green
+  "childhood":   "#d35400",   // orange
+  "immigration": "#16a085",   // teal
+  "other":       "#7f8c8d",   // gray
+};
+
+// ─── EMOJI ICONS FOR EACH EVENT TYPE ──────────────────────────
+const EVENT_ICONS = {
+  "engagement":  "💍",
+  "wedding":     "💒",
+  "honeymoon":   "⛵",
+  "birthplace":  "⭐",
+  "childhood":   "🏡",
+  "immigration": "🚢",
+  "other":       "📍",
+};
+
+// ═══════════════════════════════════════════════════════════════
+//  LOCATIONS: Add your family history locations here!
+//
+//  Each location needs:
+//    title      - Short name of the event/place
+//    year       - Year or date range (e.g. "1948" or "Summer 1952")
+//    type       - Must match one of the keys in EVENT_COLORS above
+//    lat/lng    - Coordinates (find these at maps.google.com — right-click a spot)
+//    description- Story text shown in the popup
+//    photo      - (optional) URL or relative path to a photo
+//                 e.g. "photos/grandma-wedding.jpg" if you put photos next to this file
+//                 or a full URL: "https://..."
+// ═══════════════════════════════════════════════════════════════
+
+
+const LOCATIONS = [
+  {
+    title: "Grandparents' Engagement",
+    year: "January 1954",
+    type: "engagement",
+    lat: 40.81699270537178,
+    lng: -91.09799556026705,
+    description: "Charlie proposed to Mary at Crapo Park in Burlington. She said yes!",
+    photo: null,  // Replace null with a photo path/URL to show a photo
+  },
+  {
+    title: "George and Marilyn Weingart Home",
+    year: "",
+    type: "childhood",
+    lat: 41.14336259432814, 
+    lng: -91.19098089409037,
+    description: "!",
+    photo: null,  // Replace null with a photo path/URL to show a photo
+  }, 
+  {
+    title: "Frey Home",
+    year: "1958",
+    type: "childhood",
+    lat: 40.28038082695762, 
+    lng: -88.9569967593551,
+    description: "Frey Family Home where Jeanne, Celeste, Beth, Tommy, Joseph, and Charles grew up.",
+    photo: null,  // Replace null with a photo path/URL to show a photo
+  },
+  {
+    title: "Wedding at St. Mary's",
+    year: "February 13, 1954",
+    type: "wedding",
+    lat: 41.15797045505555, 
+    lng: -91.19469548475591,
+    description: "",
+    photo: null,
+  },
+  {
+    title: "Honeymoon in St. Louis",
+    year: "February 13, 1954",
+    type: "honeymoon",
+    lat: 38.62621744105799, 
+    lng: -90.17633994487356,
+    description: "",
+    photo: null,
+  },
+  {
+    title: "Charlie's Birthplace",
+    year: "1929",
+    type: "birthplace",
+    lat: 38.75843042150345, 
+    lng: -89.66842906796467,
+    description: "Charlie was born in Highland, Illinois.",
+    photo: null,
+  },
+  {
+    title: "Mary's Birthplace",
+    year: "Born 1933",
+    type: "birthplace",
+    lat: 40.826440140250675, 
+    lng: -91.18543853263421,
+    description: "Mary grew up in Burlington, Iowa. She was the fifth child of 16.",
+    photo: null,
+  },
+  {
+    title: "Petrys Arrived",
+    year: "1903",
+    type: "immigration",
+    lat: 40.6892,
+    lng: -74.0445,
+    description: "Valentine Petry and Louisa Gau immigrated from Switzerland to Blackjack, Illinois in 1864.",
+    photo: null,
+  },
+];
+
+// ═══════════════════════════════════════════════════════════════
+//  MAP SETUP — You don't need to edit below this line
+// ═══════════════════════════════════════════════════════════════
+
+// Initialize map
+const map = L.map('map', {
+  center: START_CENTER,
+  zoom: START_ZOOM,
+  zoomControl: true,
+  attributionControl: true,
+});
+
+// Stadia Maps Watercolor tile layer (Stamen Watercolor, updated URL)
+L.tileLayer(
+  'https://tiles.stadiamaps.com/tiles/stamen_watercolor/{z}/{x}/{y}.jpg?api_key=bcaf1f18-4afa-486e-bc86-765d2320d1a7',
+  {
+    attribution: '© <a href="https://stamen.com">Stamen Design</a> | © <a href="https://stadiamaps.com">Stadia Maps</a> | © <a href="https://openstreetmap.org">OpenStreetMap</a>',
+    minZoom: 1,
+    maxZoom: 16,
+  }
+).addTo(map);
+
+// Also add a light label layer so city names show
+L.tileLayer(
+  'https://tiles.stadiamaps.com/tiles/stamen_toner_labels/{z}/{x}/{y}.png?api_key=bcaf1f18-4afa-486e-bc86-765d2320d1a7',
+  {
+    attribution: '',
+    minZoom: 1,
+    maxZoom: 16,
+    opacity: 0.5,
+  }
+).addTo(map);
+
+// Add custom legend
+const legend = L.control({ position: 'bottomleft' });
+legend.onAdd = function() {
+  const div = L.DomUtil.create('div', 'map-legend');
+  const types = [...new Set(LOCATIONS.map(l => l.type))];
+  div.innerHTML = '<h4>Legend</h4>' +
+    types.map(t => `
+      <div class="legend-item">
+        <div class="legend-dot" style="background:${EVENT_COLORS[t] || EVENT_COLORS.other}"></div>
+        <span>${t.charAt(0).toUpperCase() + t.slice(1)}</span>
+      </div>
+    `).join('');
+  return div;
+};
+legend.addTo(map);
+
+// Create markers
+LOCATIONS.forEach(loc => {
+  const color = EVENT_COLORS[loc.type] || EVENT_COLORS.other;
+  const icon  = EVENT_ICONS[loc.type]  || EVENT_ICONS.other;
+
+  // Custom HTML icon
+  const htmlIcon = L.divIcon({
+    className: '',
+    html: `
+      <div class="custom-marker">
+        <div class="marker-icon" style="background:${color}">
+          <span>${icon}</span>
+        </div>
+        <div class="marker-label">${loc.title}</div>
+      </div>
+    `,
+    iconSize: [40, 60],
+    iconAnchor: [20, 54],
+    popupAnchor: [0, -54],
+  });
+
+  // Photo HTML
+  let photoHTML = '';
+  if (loc.photo) {
+    photoHTML = `<img class="popup-photo" src="${loc.photo}" alt="${loc.title}" onerror="this.style.display='none'">`;
+  } else {
+    photoHTML = `<div class="photo-placeholder">📷 Add a photo here</div>`;
+  }
+
+  // Popup HTML
+  const popupHTML = `
+    <div class="popup-inner">
+      ${photoHTML}
+      <div class="event-type">${loc.type}</div>
+      <h3>${loc.title}</h3>
+      <div class="year">${loc.year}</div>
+      <p>${loc.description}</p>
+    </div>
+  `;
+
+  L.marker([loc.lat, loc.lng], { icon: htmlIcon })
+    .bindPopup(popupHTML, { maxWidth: 240 })
+    .addTo(map);
+});
+
+</script>
+</body>
+</html>
