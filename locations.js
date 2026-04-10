@@ -19,12 +19,12 @@ const LOCATIONS = [
 
   {
     title: "Charlie and Betty's Engagement",
-    year: "January 1954",
+    year: "October 1953",
     type: "engagement",
     lat: 40.81699270537178,
     lng: -91.09799556026705,
     description: "Charlie proposed to Betty at Crapo Park in Burlington. She said yes!",
-    photo: null,
+    photo: "photos/Crapo_Park.jpg",
   },
   {
     title: "George and Marilyn Weingart Home",
