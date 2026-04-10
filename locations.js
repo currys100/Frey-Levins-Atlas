@@ -29,19 +29,10 @@ const LOCATIONS = [
   {
     title: "George and Marilyn Weingart Home",
     year: "",
-    type: "childhood",
+    type: "other",
     lat: 41.14336259432814,
     lng: -91.19098089409037,
     description: "!",
-    photo: null,
-  },
-  {
-    title: "Frey Home",
-    year: "1958",
-    type: "childhood",
-    lat: 39.86854805317539,
-    lng: -88.9528352220882,
-    description: "Frey Family Home where Jeanne, Celeste, Beth, Tommy, Joseph, and Charles grew up.",
     photo: null,
   },
   {
@@ -54,6 +45,15 @@ const LOCATIONS = [
     photo: null,
   },
   {
+    title: "Charlie and Betty's Wedding Tree",
+    year: "February 13, 1954",
+    type: "honeymoon",
+    lat: 40.8471212656259, 
+    lng: -90.96185079717505,
+    description: "",
+    photo: "photos/WeddingTree.png",
+  },
+  {
     title: "Charlie and Betty's Honeymoon",
     year: "February 13, 1954",
     type: "honeymoon",
@@ -64,7 +64,7 @@ const LOCATIONS = [
   },
   {
     title: "Charlie's Birthplace",
-    year: "1929",
+    year: "October 24, 1929",
     type: "birthplace",
     lat: 38.75843042150345,
     lng: -89.66842906796467,
@@ -73,7 +73,7 @@ const LOCATIONS = [
   },
   {
     title: "Betty's Birthplace",
-    year: "Born 1933",
+    year: "January 28, 1933",
     type: "birthplace",
     lat: 40.826440140250675,
     lng: -91.18543853263421,
@@ -89,5 +89,61 @@ const LOCATIONS = [
     description: "Valentine Petry and Louisa Gau immigrated from Switzerland to Blackjack, Illinois in 1864.",
     photo: null,
   },
-
+  {
+    title: "Frey Family's 2nd Home",
+    year: "1958",
+    type: "childhood",
+    lat: 39.86854805317539,
+    lng: -88.9528352220882,
+    description: "Frey Family Home where Jeanne, Celeste, Beth, Tommy, Joseph, and Charles grew up.",
+    photo: null,
+  },
+  {
+    title: "Betty and Charlie's Empty Nest Home",
+    year: "1980",
+    type: "childhood",
+    lat: 39.9160309423404, 
+    lng: -88.96566445477156,
+    description: "Betty and Charlie lived here after their six children left the nest.",
+    photo: "photos/cortezhome.png",
+  },
+  {
+    title: "Betty and Charlie at Tanglewood",
+    year: "2026",
+    type: "childhood",
+    lat: 39.827904198186744, 
+    lng: -88.90266484248819,
+    description: "Betty and Charlie lived here after their six children left the nest.",
+    photo: "photos/grandsAtTanglewood.png",
+  },
+  {
+    title: "Frey Family's 1st Home",
+    year: "1954-1958",
+    type: "childhood",
+    lat: 39.851602066982416, 
+    lng: -88.97504530385152,
+    description: "",
+    photo: "photos/UniversityHouse.png",
+  },
+  {
+    title: "White Water Rafting",
+    year: "1968",
+    type: "childhood",
+    lat: 37.577534795665926, 
+    lng: -80.87396927695254,
+    description: "Frey Family Rafting Trip!",
+    photo: "photos/whitewaterrafting.png",
+  },
+  
 ];
+
+
+// 707 E wood street = hospital where where 5/6 kids were born. 
+// St mary's = hospital where CMF was born
+// 1030 N University = 1954-1958 (1st home)
+// Charlie's hitch hiking adventures
+//
+//  Frey Family Vacations
+// Charlie Frey's Wheat Harvest
+//
+//

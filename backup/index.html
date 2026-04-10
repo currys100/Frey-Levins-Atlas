@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Frey-Levins Family History Map</title>
+
+  <!-- Leaflet CSS & JS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+  <!-- Marker Cluster plugin (handles overlapping pins automatically) -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css"/>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css"/>
+  <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
+
+  <!-- Your data files — edit these, not this file -->
+  <script src="config.js"></script>
+  <script src="locations.js"></script>
+
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: Georgia, 'Times New Roman', serif;
+      background: #f5f0e8;
+    }
+
+    /* ─── MAP HEADER ─── */
+    #map-header {
+      text-align: center;
+      padding: 24px 16px 12px;
+      background: #f5f0e8;
+    }
+    #map-header h1 {
+      font-size: 3rem;
+      color: #3a2a1a;
+      letter-spacing: 0.05em;
+      font-weight: normal;
+    }
+    #map-header p {
+      font-size: 2rem;
+      color: #7a5c3a;
+      margin-top: 4px;
+      font-style: italic;
+    }
+
+    /* ─── MAP CONTAINER ─── */
+    #map {
+      width: 100%;
+      height: 80vh;
+      min-height: 500px;
+      border: 3px solid #b8956a;
+      outline: 6px solid #f5f0e8;
+    }
+
+    /* ─── FOOTER ─── */
+    #map-footer {
+      text-align: center;
+      padding: 10px;
+      font-size: 0.75rem;
+      color: #9a7a5a;
+      font-style: italic;
+    }
+
+    /* ─── CUSTOM MARKER STYLES ─── */
+    .custom-marker {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      cursor: pointer;
+    }
+    .marker-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 50% 50% 50% 0;
+      transform: rotate(-45deg);
+      border: 2px solid rgba(255,255,255,0.8);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 2px 2px 6px rgba(0,0,0,0.3);
+    }
+    .marker-icon span {
+      transform: rotate(45deg);
+      font-size: 25px;
+      line-height: 1;
+    }
+    .marker-label {
+      background: rgba(255,255,255,0.92);
+      color: #3a2a1a;
+      font-size: 20px;
+      font-family: Georgia, serif;
+      font-style: italic;
+      padding: 2px 8px;
+      border-radius: 10px;
+      margin-top: 4px;
+      white-space: nowrap;
+      border: 0.5px solid rgba(0,0,0,0.15);
+      /* Label hidden by default, shown on hover */
+      opacity: 0;
+      transition: opacity 0.15s ease;
+      pointer-events: none;
+    }
+    .custom-marker:hover .marker-label {
+      opacity: 1;
+    }
+
+    /* ─── POPUP STYLES ─── */
+    .leaflet-popup-content-wrapper {
+      background: #fffdf7;
+      border: 1px solid #c8a878;
+      border-radius: 8px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+      font-family: Georgia, serif;
+      max-width: 240px;
+    }
+    .leaflet-popup-tip {
+      background: #fffdf7;
+    }
+    .popup-inner { padding: 4px 2px; }
+    .popup-inner .event-type {
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: #9a6a3a;
+      margin-bottom: 4px;
+    }
+    .popup-inner h3 {
+      font-size: 1rem;
+      color: #3a2a1a;
+      font-weight: normal;
+      margin-bottom: 4px;
+    }
+    .popup-inner .year {
+      font-size: 0.85rem;
+      color: #7a5c3a;
+      font-style: italic;
+      margin-bottom: 6px;
+    }
+    .popup-inner p {
+      font-size: 0.82rem;
+      color: #5a4030;
+      line-height: 1.5;
+      margin-bottom: 8px;
+    }
+    .popup-inner .popup-photo {
+      width: 100%;
+      border-radius: 4px;
+      border: 1px solid #d8b888;
+      margin-bottom: 6px;
+      display: block;
+    }
+    .popup-inner .photo-placeholder {
+      width: 100%;
+      height: 100px;
+      background: #f0e8d8;
+      border: 1px dashed #c8a878;
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      color: #9a7a5a;
+      font-style: italic;
+      margin-bottom: 6px;
+    }
+
+    /* ─── LEGEND ─── */
+    .map-legend {
+      background: rgba(255, 253, 247, 0.92);
+      border: 1px solid #c8a878;
+      border-radius: 6px;
+      padding: 10px 14px;
+      font-family: Georgia, serif;
+      font-size: 12px;
+      color: #3a2a1a;
+      line-height: 1.8;
+      min-width: 140px;
+    }
+    .map-legend h4 {
+      font-size: 12px;
+      font-weight: normal;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: #7a5c3a;
+      margin-bottom: 6px;
+      border-bottom: 0.5px solid #c8a878;
+      padding-bottom: 4px;
+    }
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin: 3px 0;
+    }
+    .legend-dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      flex-shrink: 0;
+      border: 1.5px solid rgba(255,255,255,0.8);
+    }
+
+    /* ─── CLUSTER BUBBLE STYLES ─── */
+    .marker-cluster-small,
+    .marker-cluster-medium,
+    .marker-cluster-large {
+      background-clip: padding-box;
+    }
+    .marker-cluster-small div,
+    .marker-cluster-medium div,
+    .marker-cluster-large div {
+      background-color: rgba(184, 149, 106, 0.85);
+      color: #fff;
+      font-family: Georgia, serif;
+      font-size: 13px;
+      font-weight: normal;
+    }
+    .marker-cluster {
+      background-color: rgba(245, 240, 232, 0.7);
+    }
+  </style>
+</head>
+<body>
+
+<div id="map-header">
+  <h1>The Frey-Levins Atlas</h1>
+  <p>One Hundred Years Of Home &mdash; 1929&ndash;2026</p>
+</div>
+
+<div id="map"></div>
+
+<div id="map-footer">
+  Map tiles by Stamen Design &amp; Stadia Maps &bull; © OpenStreetMap contributors
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════════════════
+//  MAP SETUP
+//  This file reads from config.js and locations.js.
+//  You should not need to edit below this line.
+// ═══════════════════════════════════════════════════════════════
+
+const map = L.map('map', {
+  center: CONFIG.startCenter,
+  zoom: CONFIG.startZoom,
+  zoomControl: true,
+  attributionControl: true,
+});
+
+// Watercolor tile layer
+L.tileLayer(
+  `https://tiles.stadiamaps.com/tiles/stamen_watercolor/{z}/{x}/{y}.jpg?api_key=${CONFIG.apiKey}`,
+  {
+    attribution: '© <a href="https://stamen.com">Stamen Design</a> | © <a href="https://stadiamaps.com">Stadia Maps</a> | © <a href="https://openstreetmap.org">OpenStreetMap</a>',
+    minZoom: 1,
+    maxZoom: 16,
+  }
+).addTo(map);
+
+// Label overlay
+L.tileLayer(
+  `https://tiles.stadiamaps.com/tiles/stamen_toner_labels/{z}/{x}/{y}.png?api_key=${CONFIG.apiKey}`,
+  {
+    attribution: '',
+    minZoom: 1,
+    maxZoom: 16,
+    opacity: 0.5,
+  }
+).addTo(map);
+
+// Legend
+const legend = L.control({ position: 'bottomleft' });
+legend.onAdd = function () {
+  const div = L.DomUtil.create('div', 'map-legend');
+  const types = [...new Set(LOCATIONS.map(l => l.type))];
+  div.innerHTML = '<h4>Legend</h4>' +
+    types.map(t => `
+      <div class="legend-item">
+        <div class="legend-dot" style="background:${CONFIG.eventColors[t] || CONFIG.eventColors.other}"></div>
+        <span>${t.charAt(0).toUpperCase() + t.slice(1)}</span>
+      </div>
+    `).join('');
+  return div;
+};
+legend.addTo(map);
+
+// Marker cluster group
+const clusterGroup = L.markerClusterGroup({
+  disableClusteringAtZoom: CONFIG.disableClusteringAtZoom,
+  maxClusterRadius: CONFIG.maxClusterRadius,
+  spiderfyOnMaxZoom: true,
+  showCoverageOnHover: false,
+  zoomToBoundsOnClick: true,
+});
+
+// Build markers from LOCATIONS
+LOCATIONS.forEach(loc => {
+  const color = CONFIG.eventColors[loc.type] || CONFIG.eventColors.other;
+  const icon  = CONFIG.eventIcons[loc.type]  || CONFIG.eventIcons.other;
+
+  const htmlIcon = L.divIcon({
+    className: '',
+    html: `
+      <div class="custom-marker">
+        <div class="marker-icon" style="background:${color}">
+          <span>${icon}</span>
+        </div>
+        <div class="marker-label">${loc.title}</div>
+      </div>
+    `,
+    iconSize: [40, 60],
+    iconAnchor: [20, 54],
+    popupAnchor: [0, -54],
+  });
+
+  const photoHTML = loc.photo
+    ? `<img class="popup-photo" src="${loc.photo}" alt="${loc.title}" onerror="this.style.display='none'">`
+    : `<div class="photo-placeholder">📷 Add a photo here</div>`;
+
+  const popupHTML = `
+    <div class="popup-inner">
+      ${photoHTML}
+      <div class="event-type">${loc.type}</div>
+      <h3>${loc.title}</h3>
+      <div class="year">${loc.year}</div>
+      <p>${loc.description}</p>
+    </div>
+  `;
+
+  const marker = L.marker([loc.lat, loc.lng], { icon: htmlIcon })
+    .bindPopup(popupHTML, { maxWidth: 260 });
+
+  clusterGroup.addLayer(marker);
+});
+
+map.addLayer(clusterGroup);
+</script>
+</body>
+</html>

@@ -36,7 +36,6 @@ const CONFIG = {
     "birthplace":  "#27ae60",   // green
     "childhood":   "#d35400",   // orange
     "immigration": "#16a085",   // teal
-    "wheat harvest": "#F5DEB3", // wheat
     "other":       "#7f8c8d",   // gray
   },
 
@@ -48,7 +47,6 @@ const CONFIG = {
     "birthplace":  "⭐",
     "childhood":   "🏡",
     "immigration": "🚢",
-    "wheat harvest": "🌾",
     "other":       "📍",
   },
 

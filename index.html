@@ -5,221 +5,194 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Frey-Levins Family History Map</title>
 
-  <!-- Leaflet CSS & JS -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-
-  <!-- Marker Cluster plugin (handles overlapping pins automatically) -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css"/>
   <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css"/>
   <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
 
-  <!-- Your data files — edit these, not this file -->
   <script src="config.js"></script>
   <script src="locations.js"></script>
+  <script src="trails.js"></script>
 
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: Georgia, 'Times New Roman', serif; background: #f5f0e8; }
 
-    body {
-      font-family: Georgia, 'Times New Roman', serif;
-      background: #f5f0e8;
-    }
+    /* ─── HEADER ─── */
+    #map-header { text-align: center; padding: 24px 16px 12px; background: #f5f0e8; }
+    #map-header h1 { font-size: 3rem; color: #3a2a1a; letter-spacing: 0.05em; font-weight: normal; }
+    #map-header p  { font-size: 2rem; color: #7a5c3a; margin-top: 4px; font-style: italic; }
 
-    /* ─── MAP HEADER ─── */
-    #map-header {
-      text-align: center;
-      padding: 24px 16px 12px;
-      background: #f5f0e8;
-    }
-    #map-header h1 {
-      font-size: 3rem;
-      color: #3a2a1a;
-      letter-spacing: 0.05em;
-      font-weight: normal;
-    }
-    #map-header p {
-      font-size: 2rem;
-      color: #7a5c3a;
-      margin-top: 4px;
-      font-style: italic;
-    }
-
-    /* ─── MAP CONTAINER ─── */
-    #map {
-      width: 100%;
-      height: 80vh;
-      min-height: 500px;
-      border: 3px solid #b8956a;
-      outline: 6px solid #f5f0e8;
-    }
+    /* ─── MAP ─── */
+    #map-wrap { position: relative; }
+    #map { width: 100%; height: 80vh; min-height: 500px; border: 3px solid #b8956a; outline: 6px solid #f5f0e8; }
 
     /* ─── FOOTER ─── */
-    #map-footer {
-      text-align: center;
-      padding: 10px;
-      font-size: 0.75rem;
-      color: #9a7a5a;
-      font-style: italic;
-    }
+    #map-footer { text-align: center; padding: 10px; font-size: 0.75rem; color: #9a7a5a; font-style: italic; }
 
-    /* ─── CUSTOM MARKER STYLES ─── */
-    .custom-marker {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      cursor: pointer;
-    }
+    /* ─── MARKERS ─── */
+    .custom-marker { display: flex; flex-direction: column; align-items: center; cursor: pointer; }
     .marker-icon {
-      width: 36px;
-      height: 36px;
-      border-radius: 50% 50% 50% 0;
-      transform: rotate(-45deg);
+      position: relative;
+      width: 36px; height: 36px;
+      border-radius: 50% 50% 50% 0; transform: rotate(-45deg);
       border: 2px solid rgba(255,255,255,0.8);
-      display: flex;
-      align-items: center;
-      justify-content: center;
+      display: flex; align-items: center; justify-content: center;
       box-shadow: 2px 2px 6px rgba(0,0,0,0.3);
+      transition: width 0.2s, height 0.2s, box-shadow 0.2s, opacity 0.25s;
     }
-    .marker-icon span {
-      transform: rotate(45deg);
-      font-size: 25px;
-      line-height: 1;
-    }
+    .marker-icon span { transform: rotate(45deg); font-size: 16px; line-height: 1; transition: font-size 0.2s; }
     .marker-label {
-      background: rgba(255,255,255,0.92);
-      color: #3a2a1a;
-      font-size: 20px;
-      font-family: Georgia, serif;
-      font-style: italic;
-      padding: 2px 8px;
-      border-radius: 10px;
-      margin-top: 4px;
-      white-space: nowrap;
+      background: rgba(255,255,255,0.92); color: #3a2a1a;
+      font-size: 11px; font-family: Georgia, serif; font-style: italic;
+      padding: 2px 8px; border-radius: 10px; margin-top: 4px; white-space: nowrap;
       border: 0.5px solid rgba(0,0,0,0.15);
-      /* Label hidden by default, shown on hover */
-      opacity: 0;
-      transition: opacity 0.15s ease;
+      opacity: 0; transition: opacity 0.15s ease; pointer-events: none;
+    }
+    .custom-marker:hover .marker-label { opacity: 1; }
+
+    /* Active trail marker */
+    .marker-trail-active .marker-icon {
+      width: 50px; height: 50px;
+      box-shadow: 0 0 0 3px #fff, 0 0 0 5px var(--trail-color, #888), 2px 2px 8px rgba(0,0,0,0.3);
+    }
+    .marker-trail-active .marker-icon span { font-size: 22px; }
+    .marker-trail-active .marker-label { opacity: 1; font-weight: bold; }
+
+    /* Dimmed non-trail marker */
+    .marker-trail-dimmed .marker-icon { opacity: 0.2; }
+    .marker-trail-dimmed .marker-label { opacity: 0 !important; }
+
+    /* Stop number badge inside the icon */
+    .stop-badge {
+      position: absolute; top: -7px; right: -7px;
+      width: 17px; height: 17px; border-radius: 50%;
+      background: var(--trail-color, #888); color: #fff;
+      font-size: 9px; font-family: Georgia, serif; font-weight: bold;
+      display: flex; align-items: center; justify-content: center;
+      border: 1.5px solid #fff; transform: rotate(45deg);
       pointer-events: none;
     }
-    .custom-marker:hover .marker-label {
-      opacity: 1;
-    }
 
-    /* ─── POPUP STYLES ─── */
+    /* ─── POPUP ─── */
     .leaflet-popup-content-wrapper {
-      background: #fffdf7;
-      border: 1px solid #c8a878;
-      border-radius: 8px;
-      box-shadow: 0 4px 16px rgba(0,0,0,0.2);
-      font-family: Georgia, serif;
-      max-width: 240px;
+      background: #fffdf7; border: 1px solid #c8a878; border-radius: 8px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.2); font-family: Georgia, serif; max-width: 260px;
     }
-    .leaflet-popup-tip {
-      background: #fffdf7;
-    }
+    .leaflet-popup-tip { background: #fffdf7; }
     .popup-inner { padding: 4px 2px; }
-    .popup-inner .event-type {
-      font-size: 10px;
-      text-transform: uppercase;
-      letter-spacing: 0.1em;
-      color: #9a6a3a;
-      margin-bottom: 4px;
-    }
-    .popup-inner h3 {
-      font-size: 1rem;
-      color: #3a2a1a;
-      font-weight: normal;
-      margin-bottom: 4px;
-    }
-    .popup-inner .year {
-      font-size: 0.85rem;
-      color: #7a5c3a;
-      font-style: italic;
-      margin-bottom: 6px;
-    }
-    .popup-inner p {
-      font-size: 0.82rem;
-      color: #5a4030;
-      line-height: 1.5;
-      margin-bottom: 8px;
-    }
-    .popup-inner .popup-photo {
-      width: 100%;
-      border-radius: 4px;
-      border: 1px solid #d8b888;
-      margin-bottom: 6px;
-      display: block;
-    }
+    .popup-inner .event-type { font-size: 10px; text-transform: uppercase; letter-spacing: 0.1em; color: #9a6a3a; margin-bottom: 4px; }
+    .popup-inner h3 { font-size: 1rem; color: #3a2a1a; font-weight: normal; margin-bottom: 4px; }
+    .popup-inner .year { font-size: 0.85rem; color: #7a5c3a; font-style: italic; margin-bottom: 6px; }
+    .popup-inner p { font-size: 0.82rem; color: #5a4030; line-height: 1.5; margin-bottom: 8px; }
+    .popup-inner .popup-photo { width: 100%; border-radius: 4px; border: 1px solid #d8b888; margin-bottom: 6px; display: block; }
     .popup-inner .photo-placeholder {
-      width: 100%;
-      height: 100px;
-      background: #f0e8d8;
-      border: 1px dashed #c8a878;
-      border-radius: 4px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 11px;
-      color: #9a7a5a;
-      font-style: italic;
-      margin-bottom: 6px;
+      width: 100%; height: 80px; background: #f0e8d8; border: 1px dashed #c8a878;
+      border-radius: 4px; display: flex; align-items: center; justify-content: center;
+      font-size: 11px; color: #9a7a5a; font-style: italic; margin-bottom: 6px;
     }
 
-    /* ─── LEGEND ─── */
-    .map-legend {
-      background: rgba(255, 253, 247, 0.92);
-      border: 1px solid #c8a878;
-      border-radius: 6px;
-      padding: 10px 14px;
+    /* ─── TRAILS PANEL ─── */
+    .trails-panel {
+      background: rgba(255,253,247,0.96); border: 1px solid #c8a878;
+      border-radius: 8px; padding: 12px 14px;
+      font-family: Georgia, serif; min-width: 185px; max-width: 220px;
+    }
+    .trails-panel h4 {
+      font-size: 10px; font-weight: normal; letter-spacing: 0.12em;
+      text-transform: uppercase; color: #7a5c3a;
+      margin-bottom: 8px; border-bottom: 0.5px solid #c8a878; padding-bottom: 5px;
+    }
+    .trail-label {
+      display: flex; align-items: center; gap: 8px;
+      padding: 5px 6px; border-radius: 5px; cursor: pointer;
+      transition: background 0.15s; margin: 2px 0; user-select: none;
+    }
+    .trail-label:hover { background: rgba(0,0,0,0.05); }
+    .trail-label.active { background: rgba(0,0,0,0.07); }
+    .trail-swatch {
+      width: 13px; height: 13px; border-radius: 50%; flex-shrink: 0;
+      border: 1.5px solid rgba(255,255,255,0.9); box-shadow: 0 0 0 1px rgba(0,0,0,0.15);
+    }
+    .trail-label-text { font-size: 12px; color: #3a2a1a; line-height: 1.3; }
+    .trail-label.active .trail-label-text { font-style: italic; }
+    .trails-clear {
+      margin-top: 8px; padding-top: 6px; border-top: 0.5px solid #e0d0b8;
+      font-size: 10px; color: #9a7a5a; cursor: pointer; text-align: center;
+      font-style: italic; display: none; letter-spacing: 0.05em;
+    }
+    .trails-clear:hover { color: #5a3a1a; }
+
+    /* ─── TIMELINE DRAWER ─── */
+    #timeline-drawer {
+      position: absolute; bottom: 0; left: 0; right: 0; z-index: 1000;
+      background: rgba(255,253,247,0.97); border-top: 2px solid #c8a878;
+      padding: 12px 20px 14px;
       font-family: Georgia, serif;
-      font-size: 12px;
-      color: #3a2a1a;
-      line-height: 1.8;
-      min-width: 140px;
+      transform: translateY(100%); transition: transform 0.3s ease;
+      display: flex; flex-direction: column; gap: 10px;
     }
-    .map-legend h4 {
-      font-size: 12px;
-      font-weight: normal;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-      color: #7a5c3a;
-      margin-bottom: 6px;
-      border-bottom: 0.5px solid #c8a878;
-      padding-bottom: 4px;
+    #timeline-drawer.open { transform: translateY(0); }
+
+    #tl-header { display: flex; align-items: center; justify-content: space-between; }
+    #tl-trail-name { font-size: 0.95rem; color: #3a2a1a; font-style: italic; }
+    #tl-close {
+      font-size: 16px; color: #9a7a5a; cursor: pointer;
+      padding: 2px 7px; border-radius: 4px; line-height: 1;
     }
-    .legend-item {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      margin: 3px 0;
+    #tl-close:hover { color: #3a2a1a; background: rgba(0,0,0,0.06); }
+
+    /* Dot track */
+    #tl-track {
+      display: flex; align-items: center;
+      overflow-x: auto; padding-bottom: 2px; gap: 0;
     }
-    .legend-dot {
-      width: 12px;
-      height: 12px;
-      border-radius: 50%;
+    .tl-stop {
+      display: flex; flex-direction: column; align-items: center;
+      flex-shrink: 0; cursor: pointer; padding: 0 4px; min-width: 56px; max-width: 84px;
+    }
+    .tl-dot {
+      width: 22px; height: 22px; border-radius: 50%;
+      border: 2px solid #fff; box-shadow: 0 0 0 2px #c8a878;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 10px; color: #fff; font-family: Georgia, serif;
+      transition: transform 0.15s, box-shadow 0.15s;
       flex-shrink: 0;
-      border: 1.5px solid rgba(255,255,255,0.8);
     }
+    .tl-stop.active .tl-dot {
+      transform: scale(1.35);
+      box-shadow: 0 0 0 2px #fff, 0 0 0 4px var(--tl-color, #888);
+    }
+    .tl-stop-title {
+      font-size: 9px; color: #7a5c3a; text-align: center; margin-top: 4px;
+      line-height: 1.2; white-space: nowrap; overflow: hidden;
+      text-overflow: ellipsis; max-width: 80px;
+    }
+    .tl-stop.active .tl-stop-title { color: #3a2a1a; font-style: italic; }
+    .tl-connector { height: 2px; flex: 1; min-width: 12px; margin-bottom: 24px; flex-shrink: 0; }
 
-    /* ─── CLUSTER BUBBLE STYLES ─── */
-    .marker-cluster-small,
-    .marker-cluster-medium,
-    .marker-cluster-large {
-      background-clip: padding-box;
+    /* Nav row */
+    #tl-nav { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+    .tl-btn {
+      background: transparent; border: 1px solid #c8a878;
+      color: #5a3a1a; padding: 5px 16px; border-radius: 20px;
+      font-family: Georgia, serif; font-size: 12px; cursor: pointer;
+      transition: background 0.15s; white-space: nowrap;
     }
-    .marker-cluster-small div,
-    .marker-cluster-medium div,
-    .marker-cluster-large div {
-      background-color: rgba(184, 149, 106, 0.85);
-      color: #fff;
-      font-family: Georgia, serif;
-      font-size: 13px;
-      font-weight: normal;
+    .tl-btn:hover:not(:disabled) { background: rgba(184,149,106,0.15); }
+    .tl-btn:disabled { opacity: 0.3; cursor: default; }
+    #tl-info { text-align: center; flex: 1; min-width: 0; }
+    #tl-stop-name { font-size: 0.82rem; color: #3a2a1a; font-style: italic; }
+    #tl-stop-year { font-size: 0.72rem; color: #9a7a5a; margin-top: 1px; }
+    #tl-counter   { font-size: 0.68rem; color: #b8a080; margin-top: 1px; }
+
+    /* ─── CLUSTERS ─── */
+    .marker-cluster-small div, .marker-cluster-medium div, .marker-cluster-large div {
+      background-color: rgba(184,149,106,0.85); color: #fff;
+      font-family: Georgia, serif; font-size: 13px;
     }
-    .marker-cluster {
-      background-color: rgba(245, 240, 232, 0.7);
-    }
+    .marker-cluster { background-color: rgba(245,240,232,0.7); }
   </style>
 </head>
 <body>
@@ -229,7 +202,26 @@
   <p>One Hundred Years Of Home &mdash; 1929&ndash;2026</p>
 </div>
 
-<div id="map"></div>
+<div id="map-wrap">
+  <div id="map"></div>
+
+  <div id="timeline-drawer">
+    <div id="tl-header">
+      <span id="tl-trail-name"></span>
+      <span id="tl-close" title="Close">✕</span>
+    </div>
+    <div id="tl-track"></div>
+    <div id="tl-nav">
+      <button class="tl-btn" id="tl-prev">← Prev</button>
+      <div id="tl-info">
+        <div id="tl-stop-name"></div>
+        <div id="tl-stop-year"></div>
+        <div id="tl-counter"></div>
+      </div>
+      <button class="tl-btn" id="tl-next">Next →</button>
+    </div>
+  </div>
+</div>
 
 <div id="map-footer">
   Map tiles by Stamen Design &amp; Stadia Maps &bull; © OpenStreetMap contributors
@@ -237,105 +229,273 @@
 
 <script>
 // ═══════════════════════════════════════════════════════════════
-//  MAP SETUP
-//  This file reads from config.js and locations.js.
-//  You should not need to edit below this line.
+//  MAP INIT
 // ═══════════════════════════════════════════════════════════════
 
 const map = L.map('map', {
-  center: CONFIG.startCenter,
-  zoom: CONFIG.startZoom,
-  zoomControl: true,
-  attributionControl: true,
+  center: CONFIG.startCenter, zoom: CONFIG.startZoom,
+  zoomControl: true, attributionControl: true,
 });
 
-// Watercolor tile layer
 L.tileLayer(
   `https://tiles.stadiamaps.com/tiles/stamen_watercolor/{z}/{x}/{y}.jpg?api_key=${CONFIG.apiKey}`,
-  {
-    attribution: '© <a href="https://stamen.com">Stamen Design</a> | © <a href="https://stadiamaps.com">Stadia Maps</a> | © <a href="https://openstreetmap.org">OpenStreetMap</a>',
-    minZoom: 1,
-    maxZoom: 16,
-  }
+  { attribution: '© <a href="https://stamen.com">Stamen Design</a> | © <a href="https://stadiamaps.com">Stadia Maps</a> | © <a href="https://openstreetmap.org">OpenStreetMap</a>', minZoom:1, maxZoom:16 }
 ).addTo(map);
 
-// Label overlay
 L.tileLayer(
   `https://tiles.stadiamaps.com/tiles/stamen_toner_labels/{z}/{x}/{y}.png?api_key=${CONFIG.apiKey}`,
-  {
-    attribution: '',
-    minZoom: 1,
-    maxZoom: 16,
-    opacity: 0.5,
-  }
+  { attribution:'', minZoom:1, maxZoom:16, opacity:0.5 }
 ).addTo(map);
 
-// Legend
-const legend = L.control({ position: 'bottomleft' });
-legend.onAdd = function () {
-  const div = L.DomUtil.create('div', 'map-legend');
-  const types = [...new Set(LOCATIONS.map(l => l.type))];
-  div.innerHTML = '<h4>Legend</h4>' +
-    types.map(t => `
-      <div class="legend-item">
-        <div class="legend-dot" style="background:${CONFIG.eventColors[t] || CONFIG.eventColors.other}"></div>
-        <span>${t.charAt(0).toUpperCase() + t.slice(1)}</span>
-      </div>
-    `).join('');
-  return div;
-};
-legend.addTo(map);
+// ═══════════════════════════════════════════════════════════════
+//  BUILD MARKERS
+// ═══════════════════════════════════════════════════════════════
 
-// Marker cluster group
+// markerData[title] = { loc, marker }
+const markerData = {};
+
 const clusterGroup = L.markerClusterGroup({
   disableClusteringAtZoom: CONFIG.disableClusteringAtZoom,
   maxClusterRadius: CONFIG.maxClusterRadius,
-  spiderfyOnMaxZoom: true,
-  showCoverageOnHover: false,
-  zoomToBoundsOnClick: true,
+  spiderfyOnMaxZoom: true, showCoverageOnHover: false, zoomToBoundsOnClick: true,
 });
 
-// Build markers from LOCATIONS
 LOCATIONS.forEach(loc => {
   const color = CONFIG.eventColors[loc.type] || CONFIG.eventColors.other;
   const icon  = CONFIG.eventIcons[loc.type]  || CONFIG.eventIcons.other;
 
   const htmlIcon = L.divIcon({
     className: '',
-    html: `
-      <div class="custom-marker">
-        <div class="marker-icon" style="background:${color}">
-          <span>${icon}</span>
-        </div>
-        <div class="marker-label">${loc.title}</div>
-      </div>
-    `,
-    iconSize: [40, 60],
-    iconAnchor: [20, 54],
-    popupAnchor: [0, -54],
+    html: `<div class="custom-marker">
+             <div class="marker-icon" style="background:${color}; --trail-color:${color}">
+               <span>${icon}</span>
+             </div>
+             <div class="marker-label">${loc.title}</div>
+           </div>`,
+    iconSize: [40, 60], iconAnchor: [20, 54], popupAnchor: [0, -54],
   });
 
   const photoHTML = loc.photo
     ? `<img class="popup-photo" src="${loc.photo}" alt="${loc.title}" onerror="this.style.display='none'">`
     : `<div class="photo-placeholder">📷 Add a photo here</div>`;
 
-  const popupHTML = `
-    <div class="popup-inner">
+  const marker = L.marker([loc.lat, loc.lng], { icon: htmlIcon })
+    .bindPopup(`<div class="popup-inner">
       ${photoHTML}
       <div class="event-type">${loc.type}</div>
       <h3>${loc.title}</h3>
       <div class="year">${loc.year}</div>
       <p>${loc.description}</p>
-    </div>
-  `;
-
-  const marker = L.marker([loc.lat, loc.lng], { icon: htmlIcon })
-    .bindPopup(popupHTML, { maxWidth: 260 });
+    </div>`, { maxWidth: 260 });
 
   clusterGroup.addLayer(marker);
+  markerData[loc.title] = { loc, marker };
 });
 
 map.addLayer(clusterGroup);
+
+// ═══════════════════════════════════════════════════════════════
+//  TRAILS PANEL
+// ═══════════════════════════════════════════════════════════════
+
+const trailsControl = L.control({ position: 'bottomleft' });
+trailsControl.onAdd = function () {
+  const div = L.DomUtil.create('div', 'trails-panel');
+  L.DomEvent.disableScrollPropagation(div);
+  L.DomEvent.disableClickPropagation(div);
+  div.innerHTML =
+    `<h4>Trails</h4>` +
+    TRAILS.map((t, i) =>
+      `<div class="trail-label" data-i="${i}">
+         <div class="trail-swatch" style="background:${t.color}"></div>
+         <span class="trail-label-text">${t.name}</span>
+       </div>`
+    ).join('') +
+    `<div class="trails-clear" id="trails-clear">✕ Show all</div>`;
+  return div;
+};
+trailsControl.addTo(map);
+
+// ═══════════════════════════════════════════════════════════════
+//  TRAIL STATE
+// ═══════════════════════════════════════════════════════════════
+
+let activeTrailIdx = null;
+let activePolyline = null;
+
+function getMarkerInner(marker) {
+  const el = marker.getElement && marker.getElement();
+  return el ? el.querySelector('.custom-marker') : null;
+}
+
+function activateTrail(idx) {
+  const trail = TRAILS[idx];
+  const inTrail = new Set(trail.stops);
+
+  // Remove old polyline
+  if (activePolyline) { map.removeLayer(activePolyline); activePolyline = null; }
+
+  // Style every marker
+  Object.values(markerData).forEach(({ loc, marker }) => {
+    const inner = getMarkerInner(marker);
+    if (!inner) return;
+    inner.classList.remove('marker-trail-active', 'marker-trail-dimmed');
+    // Remove old badge
+    inner.querySelectorAll('.stop-badge').forEach(b => b.remove());
+    // Restore base color
+    const baseColor = CONFIG.eventColors[loc.type] || CONFIG.eventColors.other;
+    const iconEl = inner.querySelector('.marker-icon');
+
+    if (inTrail.has(loc.title)) {
+      inner.classList.add('marker-trail-active');
+      inner.style.setProperty('--trail-color', trail.color);
+      if (iconEl) iconEl.style.background = trail.color;
+      // Number badge
+      const n = trail.stops.indexOf(loc.title) + 1;
+      const badge = document.createElement('div');
+      badge.className = 'stop-badge';
+      badge.style.setProperty('--trail-color', trail.color);
+      badge.textContent = n;
+      if (iconEl) iconEl.appendChild(badge);
+    } else {
+      inner.classList.add('marker-trail-dimmed');
+      if (iconEl) iconEl.style.background = baseColor;
+    }
+  });
+
+  // Draw dashed polyline
+  const latlngs = trail.stops
+    .map(t => markerData[t]).filter(Boolean)
+    .map(({ loc }) => [loc.lat, loc.lng]);
+  if (latlngs.length > 1) {
+    activePolyline = L.polyline(latlngs, {
+      color: trail.color, weight: 2.5, opacity: 0.65, dashArray: '7 5',
+    }).addTo(map);
+  }
+
+  // Panel UI
+  document.querySelectorAll('.trail-label').forEach((el, i) => el.classList.toggle('active', i === idx));
+  const clearEl = document.getElementById('trails-clear');
+  if (clearEl) clearEl.style.display = 'block';
+
+  activeTrailIdx = idx;
+}
+
+function clearTrail() {
+  if (activePolyline) { map.removeLayer(activePolyline); activePolyline = null; }
+
+  Object.values(markerData).forEach(({ loc, marker }) => {
+    const inner = getMarkerInner(marker);
+    if (!inner) return;
+    inner.classList.remove('marker-trail-active', 'marker-trail-dimmed');
+    inner.querySelectorAll('.stop-badge').forEach(b => b.remove());
+    inner.style.removeProperty('--trail-color');
+    const baseColor = CONFIG.eventColors[loc.type] || CONFIG.eventColors.other;
+    const iconEl = inner.querySelector('.marker-icon');
+    if (iconEl) iconEl.style.background = baseColor;
+  });
+
+  document.querySelectorAll('.trail-label').forEach(el => el.classList.remove('active'));
+  const clearEl = document.getElementById('trails-clear');
+  if (clearEl) clearEl.style.display = 'none';
+
+  closeTimeline();
+  activeTrailIdx = null;
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  TIMELINE
+// ═══════════════════════════════════════════════════════════════
+
+let tlIdx = 0;
+
+function openTimeline(trailIdx) {
+  const trail = TRAILS[trailIdx];
+  const drawer = document.getElementById('timeline-drawer');
+  drawer.style.setProperty('--tl-color', trail.color);
+  document.getElementById('tl-trail-name').textContent = trail.name;
+
+  // Build dot track
+  const track = document.getElementById('tl-track');
+  track.innerHTML = '';
+  trail.stops.forEach((title, i) => {
+    if (i > 0) {
+      const conn = document.createElement('div');
+      conn.className = 'tl-connector';
+      conn.style.background = trail.color;
+      track.appendChild(conn);
+    }
+    const stop = document.createElement('div');
+    stop.className = 'tl-stop';
+    stop.dataset.si = i;
+    stop.innerHTML = `<div class="tl-dot" style="background:${trail.color}">${i+1}</div>
+                      <div class="tl-stop-title">${title}</div>`;
+    track.appendChild(stop);
+  });
+
+  tlIdx = 0;
+  drawer.classList.add('open');
+  updateTL();
+}
+
+function closeTimeline() {
+  document.getElementById('timeline-drawer').classList.remove('open');
+}
+
+function goToStop(i) {
+  if (activeTrailIdx === null) return;
+  const trail = TRAILS[activeTrailIdx];
+  tlIdx = Math.max(0, Math.min(i, trail.stops.length - 1));
+  updateTL();
+
+  const title = trail.stops[tlIdx];
+  const d = markerData[title];
+  if (d) {
+    map.flyTo([d.loc.lat, d.loc.lng], Math.max(map.getZoom(), 9), { duration: 1.1 });
+    setTimeout(() => d.marker.openPopup(), 1200);
+  }
+}
+
+function updateTL() {
+  if (activeTrailIdx === null) return;
+  const trail = TRAILS[activeTrailIdx];
+  const title = trail.stops[tlIdx];
+  const loc   = markerData[title] ? markerData[title].loc : null;
+
+  document.getElementById('tl-stop-name').textContent = title;
+  document.getElementById('tl-stop-year').textContent = loc ? loc.year : '';
+  document.getElementById('tl-counter').textContent   = `Stop ${tlIdx+1} of ${trail.stops.length}`;
+  document.getElementById('tl-prev').disabled = tlIdx === 0;
+  document.getElementById('tl-next').disabled = tlIdx === trail.stops.length - 1;
+
+  document.querySelectorAll('.tl-stop').forEach((el, i) => el.classList.toggle('active', i === tlIdx));
+  const active = document.querySelector('.tl-stop.active');
+  if (active) active.scrollIntoView({ behavior:'smooth', inline:'center', block:'nearest' });
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  CLICK DELEGATION
+// ═══════════════════════════════════════════════════════════════
+
+document.addEventListener('click', e => {
+  // Trail label
+  const label = e.target.closest('.trail-label');
+  if (label) {
+    const i = parseInt(label.dataset.i, 10);
+    if (activeTrailIdx === i) { clearTrail(); }
+    else { activateTrail(i); openTimeline(i); }
+    return;
+  }
+  // Clear button
+  if (e.target.id === 'trails-clear') { clearTrail(); return; }
+  // Timeline controls
+  if (e.target.id === 'tl-close') { closeTimeline(); return; }
+  if (e.target.id === 'tl-prev')  { goToStop(tlIdx - 1); return; }
+  if (e.target.id === 'tl-next')  { goToStop(tlIdx + 1); return; }
+  // Dot track stop
+  const stopEl = e.target.closest('.tl-stop');
+  if (stopEl) { goToStop(parseInt(stopEl.dataset.si, 10)); return; }
+});
 </script>
 </body>
 </html>
