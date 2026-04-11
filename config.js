@@ -12,7 +12,7 @@ const CONFIG = {
   // ─── MAP TITLE & SUBTITLE ────────────────────────────────────
   // Also update the <h1> and <p> in index.html to match.
   title:    "The Frey-Levins Atlas",
-  subtitle: "One Hundred Years Of Home — 1929–2026",
+  subtitle: "Mapped In Memmories",
 
   // ─── STARTING VIEW ───────────────────────────────────────────
   // [latitude, longitude] and zoom level.
@@ -34,7 +34,7 @@ const CONFIG = {
     "wedding":     "#8e44ad",   // purple
     "honeymoon":   "#2980b9",   // blue
     "birthplace":  "#27ae60",   // green
-    "childhood":   "#d35400",   // orange
+    "home":   "#d35400",   // orange
     "immigration": "#16a085",   // teal
     "wheat harvest": "#F5DEB3", // wheat
     "other":       "#7f8c8d",   // gray
@@ -46,7 +46,7 @@ const CONFIG = {
     "wedding":     "💒",
     "honeymoon":   "⛵",
     "birthplace":  "⭐",
-    "childhood":   "🏡",
+    "home":   "🏡",
     "immigration": "🚢",
     "wheat harvest": "🌾",
     "other":       "📍",

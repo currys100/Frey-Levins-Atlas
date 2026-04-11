@@ -15,6 +15,17 @@
 //                  or a full URL. Set to null if you don't have one yet.
 // ═══════════════════════════════════════════════════════════════
 
+// LOCATIONS NEEDED
+// 707 E wood street = hospital where where 5/6 kids were born. 
+// St mary's = hospital where CMF was born
+// 1030 N University Ave, Decatur = 1954-1958 (1st home)
+// Charlie's hitch hiking adventures
+//
+//  Frey Family Vacations: 
+// Charlie Frey's Wheat Harvest
+// Frey kids' birthplaces and homes
+//
+
 const LOCATIONS = [
 
   {
@@ -72,6 +83,15 @@ const LOCATIONS = [
     photo: null,
   },
   {
+    title: "Birthplace of Jeanne, Celeste, Beth, Tommy, and Joseph Frey",
+    year: "Jeanne:1954, Celeste:1956, Beth:1958, Tommy:1959, Jospeh:1961",
+    type: "birthplace",
+    lat: 39.84007770726192, 
+    lng: -88.9470861326874,
+    description: "Jeanne, Celeste, Beth, Tommy, and Joseph were born at the original location of St. Mary's Hospital, at 220 S Webster St. in Decatur.",
+    photo: "photos/original_st_marys_hospital.png",
+  },
+  {
     title: "Betty's Birthplace",
     year: "January 28, 1933",
     type: "birthplace",
@@ -95,16 +115,16 @@ const LOCATIONS = [
     type: "childhood",
     lat: 39.86854805317539,
     lng: -88.9528352220882,
-    description: "Frey Family Home where Jeanne, Celeste, Beth, Tommy, Joseph, and Charles grew up.",
+    description: "Betty and Charlie moved to 334 Maywood Ct. in Decatur to grow their family. Jeanne, Celeste, Beth, Tommy, Joseph, and Charles grew up here.",
     photo: null,
   },
   {
     title: "Betty and Charlie's Empty Nest Home",
-    year: "1980",
+    year: "Fall 1989",
     type: "childhood",
     lat: 39.9160309423404, 
     lng: -88.96566445477156,
-    description: "Betty and Charlie lived here after their six children left the nest.",
+    description: "Betty and Charlie moved to 624 Cortez Dr. in Forsyth after their six children left the nest.",
     photo: "photos/cortezhome.png",
   },
   {
@@ -122,7 +142,7 @@ const LOCATIONS = [
     type: "childhood",
     lat: 39.851602066982416, 
     lng: -88.97504530385152,
-    description: "",
+    description: "Betty and Charlie moved into their first home at 1030 N University Ave, Decatur. Jeanne and Celeste spent their first few years here.",
     photo: "photos/UniversityHouse.png",
   },
   {
@@ -138,12 +158,4 @@ const LOCATIONS = [
 ];
 
 
-// 707 E wood street = hospital where where 5/6 kids were born. 
-// St mary's = hospital where CMF was born
-// 1030 N University = 1954-1958 (1st home)
-// Charlie's hitch hiking adventures
-//
-//  Frey Family Vacations
-// Charlie Frey's Wheat Harvest
-//
-//
+
